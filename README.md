@@ -26,7 +26,7 @@
 #### 部署步骤
 1. **克隆代码仓库**
 ```bash
-git clone https://github.com/your-username/bandwidth-keeper-pro.git
+git clone https://github.com/mrzhangeh/bandwidth-keeper-pro.git
 cd bandwidth-keeper-pro
 ```
 

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandwidth Keeper Pro</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📶 Bandwidth Keeper Pro</h1>
+            <p class="subtitle">智能保持公网活跃 · NAS</p>
+        </div>
+        
+        <div class="card">
+            <h2>⚙️ 下载配置</h2>
+            <div id="links-container"></div>
+            <button class="btn-add" onclick="addLinkField()">+ 添加链接 (最多5个)</button>
+        </div>
+        
+        <div class="card">
+            <h2>⏱️ 定时规则 (Cron)</h2>
+            <input type="text" id="cron" placeholder="示例: 0 0 * * * (每日0点)" class="input-field">
+            <p class="hint">格式: 分 时 日 月 周 (留空则禁用定时)</p>
+        </div>
+        
+        <div class="card">
+            <h2>🐢 限速设置</h2>
+            <select id="speed-limit" class="select-field">
+    <option value="unlimited">无限制 (推荐)</option>
+    <option value="1mbps">1 MB/s (≈1024 KB/s)</option>
+    <option value="3mbps">3 MB/s (≈3072 KB/s)</option>
+    <option value="5mbps">5 MB/s (≈5120 KB/s)</option>
+            </select>
+<p class="hint">💡 单位说明：1 MB/s = 1024 KB/s（您的实测速度）</p>
+        </div>
+        
+        <div class="card">
+            <h2>🔔 钉钉通知</h2>
+            <input type="text" id="dingtalk_webhook" placeholder="https://oapi.dingtalk.com/robot/send?access_token=xxx" class="input-field">
+            <input type="text" id="dingtalk_secret" placeholder="钉钉Secret (加签)" class="input-field">
+            <p class="hint">获取方式: 钉钉群 → 智能群助手 → 自定义机器人 → 安全设置</p>
+        </div>
+        
+        <div class="action-bar">
+            <button class="btn-primary" onclick="saveConfig()">💾 保存配置</button>
+            <button class="btn-secondary" onclick="forceRun()">⚡ 立即执行</button>
+        </div>
+        
+        <div class="card">
+            <h2>📜 最近执行日志</h2>
+            <div id="logs" class="log-container">加载中...</div>
+            <button class="btn-refresh" onclick="loadLogs()">🔄 刷新日志</button>
+        </div>
+    </div>
+    
+    <script>
+        // 初始化链接字段
+        function initLinkFields(links) {
+            const container = document.getElementById('links-container');
+            container.innerHTML = '';
+            (links || Array(5).fill("")).forEach((link, i) => {
+                if (i >= 5) return;
+                container.innerHTML += `
+                    <div class="link-row">
+                        <input type="text" class="link-input" placeholder="下载链接 ${i+1}" value="${link}">
+                        ${i > 0 ? '<button class="btn-remove" onclick="removeLink(this)">−</button>' : ''}
+                    </div>
+                `;
+            });
+        }
+        
+        // 保存配置
+        async function saveConfig() {
+            const links = Array.from(document.querySelectorAll('.link-input'))
+                .map(el => el.value.trim())
+                .filter(v => v);
+            if (links.length === 0) return alert('请至少填写1个下载链接');
+            if (links.length > 5) return alert('最多5个下载链接');
+            
+            const config = {
+                download_links: links,
+                cron: document.getElementById('cron').value.trim(),
+                speed_limit: document.getElementById('speed-limit').value,
+                dingtalk_webhook: document.getElementById('dingtalk_webhook').value.trim(),
+                dingtalk_secret: document.getElementById('dingtalk_secret').value.trim()
+            };
+            
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(config)
+            });
+            const data = await res.json();
+            alert(data.message || '保存成功！');
+            if (data.success) loadConfig();
+        }
+        
+        // 立即执行
+        async function forceRun() {
+            if (!confirm('确定立即执行下载任务？')) return;
+            await fetch('/api/force-run', {method: 'POST'});
+            alert('任务已触发！请查看日志');
+            loadLogs();
+        }
+        
+        // 加载配置
+        async function loadConfig() {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            initLinkFields(config.download_links);
+            document.getElementById('cron').value = config.cron || '0 0 * * *';
+            document.getElementById('speed-limit').value = config.speed_limit || 'unlimited';
+            document.getElementById('dingtalk_webhook').value = config.dingtalk_webhook || '';
+            document.getElementById('dingtalk_secret').value = config.dingtalk_secret || '';
+        }
+        
+        // 加载日志
+        async function loadLogs() {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerHTML = '⏳ 加载中...';
+            const res = await fetch('/api/logs');
+            const data = await res.json();
+            logsDiv.innerHTML = data.logs.map(l => 
+                `<div class="log-item">${l.replace(/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/, '<span class="timestamp">[$1]</span>')}</div>`
+            ).join('') || '<div class="log-empty">暂无日志</div>';
+        }
+        
+        // 辅助函数
+        function addLinkField() {
+            if (document.querySelectorAll('.link-input').length >= 5) {
+                alert('已达最大链接数(5)');
+                return;
+            }
+            const container = document.getElementById('links-container');
+            const idx = container.children.length + 1;
+            container.insertAdjacentHTML('beforeend', `
+                <div class="link-row">
+                    <input type="text" class="link-input" placeholder="下载链接 ${idx}">
+                    <button class="btn-remove" onclick="removeLink(this)">−</button>
+                </div>
+            `);
+        }
+        function removeLink(btn) {
+            btn.parentElement.remove();
+        }
+        
+        // 初始化
+        window.onload = () => {
+            loadConfig();
+            loadLogs();
+            setInterval(loadLogs, 30000); // 每30秒自动刷新日志
+        };
+    </script>
+</body>
+</html>

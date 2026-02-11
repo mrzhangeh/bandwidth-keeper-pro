@@ -1,0 +1,11 @@
+{
+  "download_links": [
+      "https://mirrors.tuna.tsinghua.edu.cn/archlinux/iso/2026.02.01/archlinux-x86_64.iso",
+      "https://ftp.jaist.ac.jp/pub/Linux/debian-cd/13.3.0/amd64/iso-cd/debian-edu-13.3.0-amd64-netinst.iso",
+      "https://mirrors.cloud.tencent.com/almalinux/10/BaseOS/x86_64/os/images/boot.iso"
+  ],
+  "cron": "18 * * * *",
+  "speed_limit": "5mbps",
+  "dingtalk_webhook": "https://oapi.dingtalk.com/robot/send?access_token=",
+  "dingtalk_secret": ""
+}

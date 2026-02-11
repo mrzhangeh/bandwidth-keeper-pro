@@ -135,7 +135,7 @@ docker-compose up -d
 2. **下载配置**：添加1-5个下载链接（推荐使用测速文件链接，如Hetzner测速节点）
 3. **定时规则**：填写Cron表达式（格式：分 时 日 月 周，示例：`0 2 * * *` 每天凌晨2点执行）
 4. **限速设置**：选择下载限速（无限制/1/3/5MB/s）
-5. **钉钉通知**：填写钉钉机器人Webhook（可选，用于接收任务执行结果）
+5. **钉钉通知**：填写钉钉机器人Webhook以及钉钉Secret（可选，用于接收任务执行结果）
 6. 点击「保存配置」生效
 
 ### 2. 手动执行任务
@@ -163,7 +163,7 @@ docker-compose up -d
 
 ### 钉钉机器人配置
 1. 打开钉钉群 → 智能群助手 → 添加机器人 → 自定义机器人
-2. 复制Webhook地址（格式：`https://oapi.dingtalk.com/robot/send?access_token=xxx`）
+2. 复制Webhook地址（格式：`https://oapi.dingtalk.com/robot/send?access_token=xxx`），以及钉钉Secret
 3. 粘贴到Web界面的「钉钉通知」输入框中
 
 ## 🛠️ 技术栈

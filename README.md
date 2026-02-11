@@ -79,8 +79,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 复制应用代码
 COPY app/ .
 
-# 创建配置和日志目录
-RUN mkdir -p /config /logs
+# 创建配置和日志目录并设置权限（关键修复！）
+RUN mkdir -p /config /logs && \
+    chown -R 65534:65534 /config /logs  # 使用 UID 65534 (nobody)
 
 # 暴露端口
 EXPOSE 9016
@@ -99,8 +100,6 @@ docker run -d \
   --name bandwidth-keeper \
   --restart always \
   -p 9016:9016 \
-  -v $(pwd)/config:/config \
-  -v $(pwd)/logs:/logs \
   bandwidth-keeper-pro:latest
 ```
 
@@ -178,9 +177,6 @@ docker-compose up -d
 3. **Docker日志乱码**：已设置UTF-8编码，若仍乱码请检查Docker宿主机编码设置
 4. **NAS部署后无法访问**：确保NAS的9016端口已开放，且容器网络模式为桥接
 
- ## 📝 存在问题
- 1. **钉钉通知**：无法成功推送消息
-2. **定时任务**：检查Cron表达式格式仅能设置固定的时间 比如0 * * * * 每小时执行可以，修改其他的则无法执行
 
 ## 📄 许可证
 本项目基于MIT许可证开源，详见[LICENSE](LICENSE)文件。

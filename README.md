@@ -61,33 +61,7 @@ python app.py
 - Docker Compose（可选）
 
 #### 步骤1：编写Dockerfile
-在项目根目录创建`Dockerfile`：
-```dockerfile
-FROM python:3.10-slim
-
-# 设置时区和编码
-ENV TZ=Asia/Shanghai
-ENV PYTHONIOENCODING=utf-8
-
-# 创建工作目录
-WORKDIR /app
-
-# 复制依赖文件并安装
-COPY app/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 复制应用代码
-COPY app/ .
-
-# 创建配置和日志目录并设置权限（关键修复！）
-RUN mkdir -p /config /logs && \
-    chown -R 65534:65534 /config /logs  # 使用 UID 65534 (nobody)
-
-# 暴露端口
-EXPOSE 9016
-
-# 启动命令
-CMD ["python", "app.py"]
+下载至项目根目录
 ```
 
 #### 步骤2：构建并运行Docker镜像
@@ -103,30 +77,17 @@ docker run -d \
   bandwidth-keeper-pro:latest
 ```
 
-#### 步骤3（可选）：Docker Compose部署
-创建`docker-compose.yml`：
+#### 步骤3（推荐）：加载构建完成的容器部署
+下载bandwidth-keeper-pro-2.2.tar至文件夹：
 ```yaml
-version: '3.8'
+导入镜像
+docker load -i bandwidth-keeper-pro-2.2.tar
 
-services:
-  bandwidth-keeper:
-    build: .
-    image: bandwidth-keeper-pro:latest
-    container_name: bandwidth-keeper
-    restart: always
-    ports:
-      - "9016:9016"
-    volumes:
-      - ./config:/config
-      - ./logs:/logs
-    environment:
-      - TZ=Asia/Shanghai
-      - PYTHONIOENCODING=utf-8
-```
-
-启动命令：
-```bash
-docker-compose up -d
+运行容器
+docker run -d
+--name bandwidth-keeper-pro
+-p 9016:9016
+bandwidth-keeper-pro:2.2
 ```
 
 ## 📖 使用说明

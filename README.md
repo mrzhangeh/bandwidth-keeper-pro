@@ -77,7 +77,7 @@ docker run -d \
   bandwidth-keeper-pro:latest
 ```
 
-#### 步骤3（推荐）：加载构建完成的容器部署
+### 方式3：（推荐）：加载构建完成的容器部署
 下载bandwidth-keeper-pro-2.2.tar至文件夹：
 ```yaml
 导入镜像
